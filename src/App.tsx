@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,26 +24,28 @@ const queryClient = new QueryClient({
 
 const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <TooltipProvider>
-          <div className="min-h-screen moroccan-pattern">
-            <Sidebar />
-            <main className="pt-16 md:pr-64 min-h-screen">
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/drinks" element={<DrinksPage />} />
-                <Route path="/ingredients" element={<IngredientsPage />} />
-                <Route path="/reports" element={<ReportsPage />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </main>
-          </div>
-          <Toaster />
-          <Sonner />
-        </TooltipProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <TooltipProvider>
+            <div className="min-h-screen moroccan-pattern">
+              <Sidebar />
+              <main className="pt-16 md:pr-64 min-h-screen">
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/drinks" element={<DrinksPage />} />
+                  <Route path="/ingredients" element={<IngredientsPage />} />
+                  <Route path="/reports" element={<ReportsPage />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </main>
+            </div>
+            <Toaster />
+            <Sonner />
+          </TooltipProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </React.StrictMode>
   );
 };
 
