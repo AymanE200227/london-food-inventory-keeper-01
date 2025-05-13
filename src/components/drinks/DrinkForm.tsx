@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Drink } from "@/types";
 import { Input } from "@/components/ui/input";
@@ -30,7 +29,9 @@ export default function DrinkForm({
       
       if (name === "initialStock") {
         const expectedRemaining = numValue - formData.sold;
-        const actualRemaining = expectedRemaining; // Auto-calculate actual remaining
+        // Keep the actual remaining the same or update it based on expected
+        const actualRemaining = 
+          mode === "verify" ? formData.actualRemaining : expectedRemaining;
         const discrepancy = expectedRemaining - actualRemaining;
         
         onChange({
@@ -42,7 +43,9 @@ export default function DrinkForm({
         });
       } else if (name === "sold") {
         const expectedRemaining = formData.initialStock - numValue;
-        const actualRemaining = expectedRemaining; // Auto-calculate actual remaining
+        // Keep the actual remaining the same or update it based on expected
+        const actualRemaining = 
+          mode === "verify" ? formData.actualRemaining : expectedRemaining;
         const discrepancy = expectedRemaining - actualRemaining;
         
         onChange({
@@ -172,32 +175,68 @@ export default function DrinkForm({
       )}
 
       {(mode === "verify") && (
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label
-            htmlFor="actualRemaining"
-            className="text-left"
-          >
-            المتبقي الفعلي
-          </Label>
-          <Input
-            id="actualRemaining"
-            name="actualRemaining"
-            type="number"
-            min="0"
-            className="col-span-3"
-            value={formData.actualRemaining}
-            onChange={(e) => {
-              const numValue = parseInt(e.target.value, 10) || 0;
-              const discrepancy = formData.expectedRemaining - numValue;
-              onChange({
-                ...formData,
-                actualRemaining: numValue,
-                discrepancy
-              });
-            }}
-            required
-          />
-        </div>
+        <>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label
+              htmlFor="actualRemaining"
+              className="text-left"
+            >
+              المتبقي الفعلي
+            </Label>
+            <Input
+              id="actualRemaining"
+              name="actualRemaining"
+              type="number"
+              min="0"
+              className="col-span-3"
+              value={formData.actualRemaining}
+              onChange={(e) => {
+                const numValue = parseInt(e.target.value, 10) || 0;
+                const discrepancy = formData.expectedRemaining - numValue;
+                onChange({
+                  ...formData,
+                  actualRemaining: numValue,
+                  discrepancy
+                });
+              }}
+              required
+            />
+          </div>
+          
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label
+              htmlFor="initialStock"
+              className="text-left"
+            >
+              المخزون الأصلي
+            </Label>
+            <Input
+              id="initialStock"
+              name="initialStock"
+              type="number"
+              className="col-span-3"
+              value={formData.initialStock}
+              readOnly
+            />
+          </div>
+          
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label
+              htmlFor="sold"
+              className="text-left"
+            >
+              المبيعات
+            </Label>
+            <Input
+              id="sold"
+              name="sold"
+              type="number"
+              className="col-span-3"
+              value={formData.sold}
+              readOnly
+            />
+          </div>
+        </>
       )}
 
       {(mode === "verify" || mode === "edit") && (

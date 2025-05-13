@@ -1,5 +1,5 @@
+
 import { Drink, Ingredient, ReportData } from "../types";
-import { generateDummyDrinks, generateDummyIngredients } from "./dummyData";
 
 // Drinks Storage
 export const saveDrinks = (drinks: Drink[]): void => {
@@ -73,12 +73,17 @@ export const addReport = (report: ReportData): void => {
   saveReports(reports);
 };
 
-// Load dummy data into localStorage
+// Load data into localStorage
 export const loadDummyData = () => {
-  localStorage.setItem('drinks', JSON.stringify(generateDummyDrinks()));
-  localStorage.setItem('ingredients', JSON.stringify(generateDummyIngredients()));
+  const { generateDummyDrinks, generateDummyIngredients } = require("./dummyData");
+  const drinks = generateDummyDrinks();
+  const ingredients = generateDummyIngredients();
+  
+  saveDrinks(drinks);
+  saveIngredients(ingredients);
+  
   return {
-    drinks: generateDummyDrinks(),
-    ingredients: generateDummyIngredients()
+    drinks,
+    ingredients
   };
 };

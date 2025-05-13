@@ -32,7 +32,8 @@ export function CardItem({
   const percentage = stock > 0 ? (remaining / stock) * 100 : 0;
   
   // Calculate actual discrepancy if it's not provided
-  const displayDiscrepancy = discrepancy !== undefined ? discrepancy : stock - remaining;
+  const calculatedDiscrepancy = stock - remaining;
+  const displayDiscrepancy = discrepancy !== undefined ? discrepancy : calculatedDiscrepancy;
   
   return (
     <Card className="w-full overflow-hidden border border-border bg-card transition-all duration-200 hover:shadow-md">
@@ -83,8 +84,8 @@ export function CardItem({
         
         <div className="flex justify-between items-center">
           <span className="text-sm text-muted-foreground">الفرق:</span>
-          <Badge variant={displayDiscrepancy > 0 ? "destructive" : "outline"}>
-            {displayDiscrepancy === 0 ? "لا يوجد" : displayDiscrepancy > 0 ? `-${displayDiscrepancy}` : `+${Math.abs(displayDiscrepancy)}`}
+          <Badge variant={calculatedDiscrepancy > 0 ? "destructive" : "outline"}>
+            {calculatedDiscrepancy === 0 ? "لا يوجد" : calculatedDiscrepancy > 0 ? `${calculatedDiscrepancy}` : `+${Math.abs(calculatedDiscrepancy)}`}
           </Badge>
         </div>
         

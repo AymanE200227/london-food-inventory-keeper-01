@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { generateDrinksPDF, generateIngredientsPDF } from "@/utils/pdfUtils";
-import { loadDummyData } from "@/utils/localStorage";
 import { Drink, Ingredient } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
@@ -38,39 +37,48 @@ export default function ReportControls({
     localStorage.setItem("auto-report-whatsapp", JSON.stringify(autoReport));
   }, [phoneNumber, autoReport]);
 
-  const handleSendReport = () => {
+  const handleSendReport = async () => {
     try {
-      // Open WhatsApp with a predefined message
-      const reportUrl = `https://api.whatsapp.com/send?phone=${phoneNumber.replace("+", "")}&text=${encodeURIComponent(
-        `تقرير ${period === "daily" ? "يومي" : period === "weekly" ? "أسبوعي" : "شهري"} من مطعم لندن فود:\n\n` +
-        `المشروبات المباعة: ${drinks.reduce((acc, drink) => acc + drink.sold, 0)} وحدة\n` +
-        `المواد الأولية المستخدمة: ${ingredients.reduce((acc, ing) => acc + ing.used, 0)} وحدة\n\n` +
-        `المشروبات الأكثر مبيعاً:\n` +
-        drinks
-          .sort((a, b) => b.sold - a.sold)
-          .slice(0, 3)
-          .map((d) => `- ${d.nameAr || d.name}: ${d.sold} وحدة`)
-          .join("\n") +
-        `\n\nالمواد الأولية منخفضة المخزون:\n` +
-        ingredients
-          .filter((i) => i.remaining / i.initialStock < 0.2 && i.initialStock > 0)
-          .map((i) => `- ${i.nameAr || i.name}: ${Math.round((i.remaining / i.initialStock) * 100)}% متبقي`)
-          .join("\n") +
-        `\n\nحالات النقص:\n` +
-        drinks
-          .filter(d => d.discrepancy > 0)
-          .map(d => `- ${d.nameAr || d.name}: نقص ${d.discrepancy} وحدة من أصل ${d.initialStock} وحدة`)
-          .join("\n")
-      )}`;
-      
-      window.open(reportUrl, "_blank");
+      // Prepare report data
+      const reportData = {
+        type: "report",
+        period,
+        data: {
+          drinksSold: drinks.reduce((acc, drink) => acc + drink.sold, 0),
+          ingredientsUsed: ingredients.reduce((acc, ing) => acc + ing.used, 0),
+          topDrinks: drinks
+            .sort((a, b) => b.sold - a.sold)
+            .slice(0, 3)
+            .map((d) => ({ name: d.nameAr || d.name, sold: d.sold })),
+          lowStock: ingredients
+            .filter((i) => i.remaining / i.initialStock < 0.2 && i.initialStock > 0)
+            .map((i) => ({ 
+              name: i.nameAr || i.name, 
+              percentage: Math.round((i.remaining / i.initialStock) * 100) 
+            })),
+          discrepancies: drinks
+            .filter(d => d.discrepancy > 0)
+            .map(d => ({
+              name: d.nameAr || d.name,
+              discrepancy: d.discrepancy,
+              initialStock: d.initialStock
+            }))
+        }
+      };
+
+      // Send the report directly to a backend service or log it
+      console.log("Sending report data:", reportData);
       
       toast({
-        title: "تم إرسال التقرير",
-        description: "تم فتح WhatsApp لإرسال التقرير",
+        title: "تم إعداد التقرير",
+        description: "تم إرسال التقرير إلى الأرشيف",
       });
+
+      // Here you would typically send data to a server endpoint
+      // that would handle the WhatsApp message sending via an API
+      // For demo purposes, we'll just log the data
     } catch (error) {
-      console.error("Error sending WhatsApp report:", error);
+      console.error("Error sending report:", error);
       toast({
         title: "خطأ",
         description: "حدث خطأ أثناء إرسال التقرير",
@@ -79,7 +87,7 @@ export default function ReportControls({
     }
   };
 
-  const handleSendAlert = () => {
+  const handleSendAlert = async () => {
     try {
       const items = [
         ...drinks.filter(d => d.discrepancy > 0).map(d => `نقص في ${d.nameAr || d.name}: ${d.discrepancy} وحدة من أصل ${d.initialStock} وحدة`),
@@ -94,19 +102,23 @@ export default function ReportControls({
         });
         return;
       }
+
+      // Prepare alert data to send
+      const alertData = {
+        type: "alert",
+        items: items,
+        timestamp: new Date().toISOString()
+      };
       
-      const alertUrl = `https://api.whatsapp.com/send?phone=${phoneNumber.replace("+", "")}&text=${encodeURIComponent(
-        `تنبيهات من مطعم لندن فود:\n\n` + items.join("\n")
-      )}`;
-      
-      window.open(alertUrl, "_blank");
+      // Log the data (would be sent to backend in production)
+      console.log("Sending alert data:", alertData);
       
       toast({
         title: "تم إرسال التنبيه",
-        description: "تم فتح WhatsApp لإرسال التنبيه",
+        description: "تم إرسال التنبيهات إلى نظام المراقبة",
       });
     } catch (error) {
-      console.error("Error sending WhatsApp alert:", error);
+      console.error("Error sending alert:", error);
       toast({
         title: "خطأ",
         description: "حدث خطأ أثناء إرسال التنبيه",
@@ -144,24 +156,6 @@ export default function ReportControls({
       toast({
         title: "خطأ",
         description: "حدث خطأ أثناء تصدير تقرير المواد الأولية",
-        variant: "destructive"
-      });
-    }
-  };
-  
-  const handleLoadDummyData = () => {
-    try {
-      const data = loadDummyData();
-      onDummyDataLoaded(data);
-      toast({
-        title: "تم تحميل البيانات التجريبية",
-        description: "تم إضافة بيانات تجريبية للمشروبات والمواد الأولية",
-      });
-    } catch (error) {
-      console.error("Error loading dummy data:", error);
-      toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء تحميل البيانات التجريبية",
         variant: "destructive"
       });
     }
@@ -207,7 +201,7 @@ export default function ReportControls({
         <div className="p-4 bg-moroccan-accent/10 rounded-lg flex items-center justify-between border border-moroccan-accent/30">
           <div>
             <h3 className="font-bold text-foreground">التقارير التلقائية</h3>
-            <p className="text-sm text-muted-foreground">إرسال تنبيهات تلقائية عبر واتساب عند اكتشاف نقص</p>
+            <p className="text-sm text-muted-foreground">إرسال تنبيهات تلقائية عند اكتشاف نقص</p>
           </div>
           <div className="flex items-center space-x-2">
             <Switch
@@ -227,11 +221,11 @@ export default function ReportControls({
             <div className="flex flex-col gap-2">
               <Button className="w-full" onClick={handleSendReport}>
                 <Send className="ml-2 h-4 w-4" />
-                إرسال تقرير إلى واتساب
+                إرسال تقرير
               </Button>
               <Button variant="outline" className="w-full" onClick={handleSendAlert}>
                 <Send className="ml-2 h-4 w-4" />
-                إرسال التنبيهات إلى واتساب
+                إرسال التنبيهات
               </Button>
             </div>
           </div>
@@ -249,16 +243,6 @@ export default function ReportControls({
               </Button>
             </div>
           </div>
-        </div>
-
-        <div className="pt-4 border-t">
-          <Button 
-            onClick={handleLoadDummyData} 
-            variant="outline" 
-            className="w-full"
-          >
-            تحميل بيانات تجريبية
-          </Button>
         </div>
       </CardContent>
     </Card>

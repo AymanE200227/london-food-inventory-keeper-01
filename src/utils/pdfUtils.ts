@@ -1,8 +1,9 @@
+
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 // Logo as base64 string - replace with your actual logo
-const LOGO_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAFdklEQVR4nO2dW4hcRRCGey9ZE01UVNQHLxgvqHgBBUVFUcELehRFQRFBfTFeXjQgKGq8oGJAFLw+iIKIgkoQNCgaRfBBDBoRDAYx6npJ1k00m+xuahjYQLK9Z7Znpqer+/+gHmazdM/5uqr7VFd3RSmlUqmEdUhJ6xYHK2ktAJpOGjVp1AoMEGmQCQwYaZAJDBhpkAkMGGmQCQwYaZAJDBhpkAkMGGmQCQwYaRAA8yTdIOk9ST9L+lvSb5I+lPSkpEtLlRZo0BCNVz/CDyXtkjTW8qXfLmmYsZE0T9JKSVOENt8m6UugpVU8piU9LWl+4fgcK+lISY9KmsjQUE0bQZPUQklPSfqP0MDbJM2v7Z4sypRbyXexmjZc4opokKRjJL1PaJSWfGdJmi1whKTXCA3TEURdZHCsBtIlPUFokO7l7C3pEEm7CY3RsvAYgQMkTRIaoiXdcxqD5AlCIzQtfUrzAQ+Q9CuhAVrga3Fj8BxJaICWZbdoDJZPCA3QTBucTyg8VlILoW4tC88UGCrpD0LNWpZ9SWOQvE6oWcvCiwWGChoJaVn2vMYgeYBQs5ZlH5M0RmOAnEGoWcuy45IOFRgmN5UBsqhBO5tm0S4n1Kxl2Xc1BsmDhJq1LLuAuGTIivTohInFoQ+yvlml4gxae5N10K51VftmNQxj0DZ8B6jwaAjGlKTZA9C/eFW0SNKvhFm+vQ1A/05V0SxJjxPq1LL0QmJ9b5RkwDYlU2grSqscm7RYnxIR+4Wk5cFs9pK+JczubT+4/3l5a4nvE81qVk4WGC7rCQ3RsvAW6mK6R0h6gNAITfO2cefBoryLX9OyrNswt9Pcaz8lbCE0StPes7x3ZO+exX7ZdwkNU8/CXhdaRMPUwWkfCfIP03M1BkvbJpWH1pmsFxgs2rklffPFhoZpQe5t4vkK3SapnwiNnav1V+sIiWdWq6TruzZqf0lLa5tFWuhrubFikS1fxttOaGzb3hZtknRhrcLbZb+KjwbuZp4JKbWvuP2zrtYuF798bfYe2E/SdTVLbO/VB0v6pk2jNVm7q9gQl4vaJuIZTMVwiWfZ1gQNT6jmdqtbtdbidBG+OQvaOtidf7Z8AMNrSVcWM8ZzGQl3KDFgKF1UmRCf2Et6wesBDFfnpt3bxU3hDiT2TdF3CP1LX6PcQzsr6TjCTl56txwGd5UwwkZJ5xHiMCbpmaRDTsw6rzKn+97Sk4mGJPR4p/fKHY/0jKQdCYYkNNc90OOF8zh+IWk6wZiEf+3KHu+VOwb+kGBQ4v+2T9I5AzXDA+NexJmYYFTiv8b6NHbiwCAOQliWYFTi3xZXaIwc4gDRlib457ckrZ/23dmJAvvTLkmNE/pJg/itE+fO+TdJdhIml5ZlP0t6S07SmcSeNLZOaJzk5ExITPe93920XHrV+rGEweiLjvfE6exyfJk/HZ8kDFKvgTqt4+ubQRIvJOoTXmK+vC9HPflkgjBwvB7q3N43RNjwM7HwBNL5PQmP94B8QRi4vrCpP7ceSnql5ue0byj9am44VATCAOYr8lnRN/usqbI9m/OmOwaMkmR9uok95k70VvCQsIXvmwlDVY9izztfO5ibxgWFGo3sZofL5rih0UsBxs+slQqGZts9cl6X+QNFnfV8je3ukXDLD7OfkG8l66+GZoYHqXkGnlnq04bEnZlBNoQR7wBZo1DLrqpYMhPjVzRC8DR6+8hVfKcp83m75FzkmeaT+rkZ5Q3y3V52BxY53iHk6P178eSJvcqPGeq/xPZoUXBOfXzfc+P55A19w+vhUN35esWb/clb/rI76XP69fPdXi9nLtrolb6m/DGvdF3b9VCpVCqViusXIIjYIx0mO/IAAAAASUVORK5CYII=';
+const LOGO_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAFdklEQVR4nO2dW4hcRRCGey9ZE01UVNQHLxgvqHgBBUVFUcELehRFQRFBfTFeXjQgKGq8oGJAFLw+iIKIgkoQNCgaRfBBDBoRDAYx6npJ1k00m+xuahjYQLK9Z7Znpqer+/+gHmazdM/5uqr7VFd3RSmlUqmEdUhJ6xYHK2ktAJpOGjVp1AoMEGmQCQwYaZAJDBhpkAkMGGmQCQwYaZAJDBhpkAkMGGmQCQwYaBAA8yTdIOk9ST9L+lvSb5I+lPSkpEtLlRZo0BCNVz/CDyXtkjTW8qXfLmmYsZE0T9JKSVOENt8m6UugpVU8piU9LWl+4fgcK+lISY9KmsjQUE0bQZPUQklPSfqP0MDbJM2v7Z4sypRbyXexmjZc4opokKRjJL1PaJSWfGdJmi1whKTXCA3TEURdZHCsBtIlPUFokO7l7C3pEEm7CY3RsvAYgQMkTRIaoiXdcxqD5AlCIzQtfUrzAQ+Q9CuhAVrga3Fj8BxJaICWZbdoDJZPCA3QTBucTyg8VlILoW4tC88UGCrpD0LNWpZ9SWOQvE6oWcvCiwWGChoJaVn2vMYgeYBQs5ZlH5M0RmOAnEGoWcuy45IOFRgmN5UBsqhBO5tm0S4n1Kxl2Xc1BsmDhJq1LLuAuGTIivTohInFoQ+yvlml4gxae5N10K51VftmNQxj0DZ8B6jwaAjGlKTZA9C/eFW0SNKvhFm+vQ1A/05V0SxJjxPq1LL0QmJ9b5RkwDYlU2grSqscm7RYnxIR+4Wk5cFs9pK+JczubT+4/3l5a4nvE81qVk4WGC7rCQ3RsvAW6mK6R0h6gNAITfO2cefBoryLX9OyrNswt9Pcaz8lbCE0StPes7x3ZO+exX7ZdwkNU8/CXhdaRMPUwWkfCfIP03M1BkvbJpWH1pmsFxgs2rklffPFhoZpQe5t4vkK3SapnwiNnav1V+sIiWdWq6TruzZqf0lLa5tFWuhrubFikS1fxttOaGzb3hZtknRhrcLbZb+KjwbuZp4JKbWvuP2zrtYuF798bfYe2E/SdTVLbO/VB0v6pk2jNVm7q9gQl4vaJuIZTMVwiWfZ1gQNT6jmdqtbtdbidBG+OQvaOtidf7Z8AMNrSVcWM8ZzGQl3KDFgKF1UmRCf2Et6wesBDFfnpt3bxU3hDiT2TdF3CP1LX6PcQzsr6TjCTl56txwGd5UwwkZJ5xHiMCbpmaRDTsw6rzKn+97Sk4mGJPR4p/fKHY/0jKQdCYYkNNc90OOF8zh+IWk6wZiEf+3KHu+VOwb+kGBQ4v+2T9I5AzXDA+NexJmYYFTiv8b6NHbiwCAOQliWYFTi3xZXaIwc4gDRlib457ckrZ/23dmJAvvTLkmNE/pJg/itE+fO+TdJdhIml5ZlP0t6S07SmcSeNLZOaJzk5ExITPe93920XHrV+rGEweiLjvfE6exyfJk/HZ8kDFKvgTqt4+ubQRIvJOoTXmK+vC9HPflkgjBwvB7q3N43RNjwM7HwBNL5PQmP94B8QRi4vrCpP7ceSnql5ue0byj9am44VATCAOYr8lnRN/usqbI9m/OmOwaMkmR9uok95k70VvCQsIXvmwlDVY9izztfO5ibxgWFGo3sZofL5rih0UsBxs+slQqGZts9cl6X+QNFnfV8je3ukXDLD7OfkG8l66+GZoYHqXkGnlnq04bEnZlBNoQR7wBZo1DLrqpYMhPjVzRC8DR6+8hVfKcp83m75FzkmeaT+rkZ5Q3y3V52BxY53iHk6P178eSJvcqPGeq/xPZoUXBOfXzfc+P55A19w+vhUN35esWb/clb/rI76XP69fPdXi9nLtrolb6m/DGvdF3b9VCpVCqViusXIIjYIx0mO/IAAAAASUVORK5CYII=';
 
 /**
  * Generate a PDF report
@@ -13,12 +14,16 @@ const LOGO_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAA
  */
 export const generatePDF = (title, data, columns, fileName = 'london-food-report.pdf') => {
   try {
-    // Create a new PDF document
+    // Create a new PDF document with RTL support
     const doc = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
       format: 'a4'
     });
+
+    // Add Arabic font support
+    doc.setFont("helvetica", "normal");
+    doc.setR2L(true); // Enable right-to-left for Arabic text
 
     // Add logo
     try {
@@ -29,7 +34,7 @@ export const generatePDF = (title, data, columns, fileName = 'london-food-report
     }
 
     // Add title
-    doc.setFont('helvetica', 'bold');
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(20);
     doc.setTextColor('#ea384c'); // Red color for title
     doc.text(title, doc.internal.pageSize.width / 2, 20, {
@@ -44,15 +49,35 @@ export const generatePDF = (title, data, columns, fileName = 'london-food-report
       align: 'right'
     });
 
+    // Translate column names to Arabic
+    const translateColumn = (col) => {
+      const translations = {
+        'name': 'الاسم',
+        'initialStock': 'المخزون الأصلي',
+        'sold': 'المبيعات',
+        'expectedRemaining': 'المتبقي المتوقع',
+        'actualRemaining': 'المتبقي الفعلي',
+        'discrepancy': 'الفرق',
+        'used': 'المستخدم',
+        'remaining': 'المتبقي',
+        'unit': 'الوحدة'
+      };
+      return translations[col] || col;
+    };
+
     // Add table
     doc.setTextColor(0, 0, 0); // Black
     const tableData = data.map((item) => {
-      return columns.map((col) => item[col] !== undefined ? item[col].toString() : '');
+      return columns.map((col) => {
+        if (col === 'name' && item['nameAr']) {
+          return item['nameAr']; // Use Arabic name if available
+        }
+        return item[col] !== undefined ? item[col].toString() : '';
+      });
     });
 
     const tableHeaders = columns.map((col) => {
-      // Convert camelCase to readable header
-      return col.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase());
+      return translateColumn(col);
     });
 
     // Add table using autotable
@@ -65,7 +90,7 @@ export const generatePDF = (title, data, columns, fileName = 'london-food-report
           fillColor: [234, 56, 76],
           textColor: [255, 255, 255],
           fontStyle: 'bold',
-          halign: 'center'
+          halign: 'right'
         },
         styles: {
           font: 'helvetica',
@@ -78,29 +103,20 @@ export const generatePDF = (title, data, columns, fileName = 'london-food-report
         },
         margin: {
           top: 40
+        },
+        didDrawPage: (data) => {
+          // Footer on each page
+          doc.setFontSize(10);
+          doc.setTextColor(150, 150, 150); // Gray text
+          doc.text('London Food - نظام إدارة المخزون', doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, {
+            align: 'center'
+          });
         }
       });
     } catch (err) {
       console.error('Error generating table:', err);
       // Add a simple text instead if the table fails
       doc.text('Failed to generate table. Please check your data.', 20, 50);
-    }
-
-    // Add footer
-    try {
-      // Fix: Use a different method to get page count instead of getNumberOfPages
-      const pageCount = (doc.internal as any).pages.length - 1;
-      for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        doc.setFontSize(10);
-        doc.setTextColor(150, 150, 150); // Gray text
-        doc.text('London Food - نظام إدارة المخزون', doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, {
-          align: 'center'
-        });
-      }
-    } catch (err) {
-      console.warn('Failed to add footer to PDF:', err);
-      // Continue without the footer
     }
 
     // Save the PDF
