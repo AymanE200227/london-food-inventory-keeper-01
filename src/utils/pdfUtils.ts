@@ -13,80 +13,85 @@ const LOGO_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAA
  * @param fileName Name of the file to download
  */
 export const generatePDF = (title, data, columns, fileName = 'london-food-report.pdf') => {
-  const doc = new jsPDF({
-    orientation: 'portrait',
-    unit: 'mm',
-    format: 'a4'
-  });
+  try {
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
 
-  // Add logo
-  doc.addImage(LOGO_BASE64, 'PNG', 15, 10, 20, 20);
+    // Add logo
+    doc.addImage(LOGO_BASE64, 'PNG', 15, 10, 20, 20);
 
-  // Add title
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(20);
-  doc.setTextColor('#ea384c'); // Red color for title
-  doc.text(title, doc.internal.pageSize.width / 2, 20, {
-    align: 'center'
-  });
-
-  // Add date
-  const currentDate = new Date().toLocaleDateString('ar-MA');
-  doc.setFontSize(12);
-  doc.setTextColor(80, 80, 80); // Dark gray
-  doc.text(`تاريخ: ${currentDate}`, doc.internal.pageSize.width - 20, 30, {
-    align: 'right'
-  });
-
-  // Add table
-  doc.setTextColor(0, 0, 0); // Black
-  const tableData = data.map((item) => {
-    return columns.map((col) => item[col] !== undefined ? item[col].toString() : '');
-  });
-
-  const tableHeaders = columns.map((col) => {
-    // Convert camelCase to readable header
-    return col.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase());
-  });
-
-  autoTable(doc, {
-    head: [tableHeaders],
-    body: tableData,
-    theme: 'grid',
-    headStyles: {
-      fillColor: [234, 56, 76],
-      textColor: [255, 255, 255],
-      fontStyle: 'bold',
-      halign: 'center'
-    },
-    styles: {
-      font: 'helvetica',
-      fontSize: 10,
-      cellPadding: 5,
-      halign: 'right'
-    },
-    alternateRowStyles: {
-      fillColor: [245, 245, 245]
-    },
-    margin: {
-      top: 40
-    }
-  });
-
-  // Add footer
-  // Use the correct property for page count
-  const pageCount = doc.getNumberOfPages();
-  for (let i = 1; i <= pageCount; i++) {
-    doc.setPage(i);
-    doc.setFontSize(10);
-    doc.setTextColor(150, 150, 150); // Gray text
-    doc.text('London Food - نظام إدارة المخزون', doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, {
+    // Add title
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(20);
+    doc.setTextColor('#ea384c'); // Red color for title
+    doc.text(title, doc.internal.pageSize.width / 2, 20, {
       align: 'center'
     });
-  }
 
-  doc.save(fileName);
-  return doc;
+    // Add date
+    const currentDate = new Date().toLocaleDateString('ar-MA');
+    doc.setFontSize(12);
+    doc.setTextColor(80, 80, 80); // Dark gray
+    doc.text(`تاريخ: ${currentDate}`, doc.internal.pageSize.width - 20, 30, {
+      align: 'right'
+    });
+
+    // Add table
+    doc.setTextColor(0, 0, 0); // Black
+    const tableData = data.map((item) => {
+      return columns.map((col) => item[col] !== undefined ? item[col].toString() : '');
+    });
+
+    const tableHeaders = columns.map((col) => {
+      // Convert camelCase to readable header
+      return col.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase());
+    });
+
+    autoTable(doc, {
+      head: [tableHeaders],
+      body: tableData,
+      theme: 'grid',
+      headStyles: {
+        fillColor: [234, 56, 76],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      styles: {
+        font: 'helvetica',
+        fontSize: 10,
+        cellPadding: 5,
+        halign: 'right'
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245]
+      },
+      margin: {
+        top: 40
+      }
+    });
+
+    // Add footer
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(10);
+      doc.setTextColor(150, 150, 150); // Gray text
+      doc.text('London Food - نظام إدارة المخزون', doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, {
+        align: 'center'
+      });
+    }
+
+    doc.save(fileName);
+    console.log('PDF generated successfully:', fileName);
+    return doc;
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    throw error;
+  }
 };
 
 /**
@@ -106,7 +111,7 @@ export const generateDrinksPDF = (drinks) => {
  */
 export const generateIngredientsPDF = (ingredients) => {
   return generatePDF(
-    'تقرير المكونات',
+    'تقرير المواد الأولية',
     ingredients,
     ['name', 'initialStock', 'used', 'remaining', 'unit'],
     'london-food-ingredients-report.pdf'

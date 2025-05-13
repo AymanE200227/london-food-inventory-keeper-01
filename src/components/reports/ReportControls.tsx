@@ -43,14 +43,14 @@ export default function ReportControls({
     const reportUrl = `https://api.whatsapp.com/send?phone=${phoneNumber.replace("+", "")}&text=${encodeURIComponent(
       `تقرير ${period === "daily" ? "يومي" : period === "weekly" ? "أسبوعي" : "شهري"} من مطعم لندن فود:\n\n` +
       `المشروبات المباعة: ${drinks.reduce((acc, drink) => acc + drink.sold, 0)} وحدة\n` +
-      `المكونات المستخدمة: ${ingredients.reduce((acc, ing) => acc + ing.used, 0)} وحدة\n\n` +
+      `المواد الأولية المستخدمة: ${ingredients.reduce((acc, ing) => acc + ing.used, 0)} وحدة\n\n` +
       `المشروبات الأكثر مبيعاً:\n` +
       drinks
         .sort((a, b) => b.sold - a.sold)
         .slice(0, 3)
         .map((d) => `- ${d.nameAr || d.name}: ${d.sold} وحدة`)
         .join("\n") +
-      `\n\nالمكونات منخفضة المخزون:\n` +
+      `\n\nالمواد الأولية منخفضة المخزون:\n` +
       ingredients
         .filter((i) => i.remaining / i.initialStock < 0.2 && i.initialStock > 0)
         .map((i) => `- ${i.nameAr || i.name}: ${Math.round((i.remaining / i.initialStock) * 100)}% متبقي`)
@@ -98,19 +98,37 @@ export default function ReportControls({
   };
   
   const handleExportDrinksPDF = () => {
-    generateDrinksPDF(drinks);
-    toast({
-      title: "تم تصدير التقرير",
-      description: "تم تحميل تقرير المشروبات بصيغة PDF",
-    });
+    try {
+      generateDrinksPDF(drinks);
+      toast({
+        title: "تم تصدير التقرير",
+        description: "تم تحميل تقرير المشروبات بصيغة PDF",
+      });
+    } catch (error) {
+      console.error("Error exporting drinks PDF:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تصدير تقرير المشروبات",
+        variant: "destructive"
+      });
+    }
   };
   
   const handleExportIngredientsPDF = () => {
-    generateIngredientsPDF(ingredients);
-    toast({
-      title: "تم تصدير التقرير",
-      description: "تم تحميل تقرير المكونات بصيغة PDF",
-    });
+    try {
+      generateIngredientsPDF(ingredients);
+      toast({
+        title: "تم تصدير التقرير",
+        description: "تم تحميل تقرير المواد الأولية بصيغة PDF",
+      });
+    } catch (error) {
+      console.error("Error exporting ingredients PDF:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تصدير تقرير المواد الأولية",
+        variant: "destructive"
+      });
+    }
   };
   
   const handleLoadDummyData = () => {
@@ -118,7 +136,7 @@ export default function ReportControls({
     onDummyDataLoaded(data);
     toast({
       title: "تم تحميل البيانات التجريبية",
-      description: "تم إضافة بيانات تجريبية للمشروبات والمكونات",
+      description: "تم إضافة بيانات تجريبية للمشروبات والمواد الأولية",
     });
   };
 
@@ -198,7 +216,7 @@ export default function ReportControls({
                 تحميل تقرير المشروبات (PDF)
               </Button>
               <Button variant="secondary" className="w-full" onClick={handleExportIngredientsPDF}>
-                تحميل تقرير المكونات (PDF)
+                تحميل تقرير المواد الأولية (PDF)
               </Button>
             </div>
           </div>

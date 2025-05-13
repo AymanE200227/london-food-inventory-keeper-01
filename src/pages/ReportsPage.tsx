@@ -94,7 +94,7 @@ export default function ReportsPage() {
         
         <Card>
           <CardHeader>
-            <CardTitle>استخدام المكونات</CardTitle>
+            <CardTitle>استخدام المواد الأولية</CardTitle>
           </CardHeader>
           <CardContent className="flex justify-center py-6">
             {getIngredientData().length > 0 ? (
@@ -132,15 +132,15 @@ export default function ReportsPage() {
             </div>
             
             <div>
-              <h3 className="text-lg font-bold mb-2">المكونات</h3>
-              <p>إجمالي المكونات: {ingredients.length}</p>
+              <h3 className="text-lg font-bold mb-2">المواد الأولية</h3>
+              <p>إجمالي المواد الأولية: {ingredients.length}</p>
               <p>المستخدم: {ingredients.reduce((acc, ingredient) => acc + ingredient.used, 0).toFixed(2)} وحدة</p>
               <p>العناصر منخفضة المخزون: {getLowStockItems().length}</p>
             </div>
             
             {getLowStockItems().length > 0 && (
               <div>
-                <h3 className="text-lg font-bold mb-2">المكونات التي تحتاج للتزويد</h3>
+                <h3 className="text-lg font-bold mb-2">المواد الأولية التي تحتاج للتزويد</h3>
                 <ul className="list-disc list-inside">
                   {getLowStockItems().map((item) => (
                     <li key={item.id}>

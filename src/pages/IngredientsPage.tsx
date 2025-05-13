@@ -86,7 +86,7 @@ export default function IngredientsPage() {
     if (dialogMode === "update" && ratio < 0.2 && ingredient.initialStock > 0) {
       toast({
         title: "تنبيه",
-        description: `المكون ${ingredient.nameAr || ingredient.name} على وشك النفاد (${Math.round(ratio * 100)}% متبقي)`,
+        description: `المادة ${ingredient.nameAr || ingredient.name} على وشك النفاد (${Math.round(ratio * 100)}% متبقي)`,
         variant: "destructive",
       });
     }
@@ -95,25 +95,25 @@ export default function IngredientsPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <PageTitle
-        title="إدارة المكونات"
-        description="إضافة وتعديل ومراقبة مخزون المكونات الأولية"
+        title="إدارة المواد الأولية"
+        description="إضافة وتعديل ومراقبة مخزون المواد الأولية"
         action={
           <Button onClick={handleAddIngredient}>
             <Plus className="ml-2 h-4 w-4" />
-            إضافة مكون
+            إضافة مادة
           </Button>
         }
       />
 
       {ingredients.length === 0 ? (
         <div className="text-center py-12 moroccan-pattern rounded-lg">
-          <h3 className="text-xl font-bold mb-2">لا توجد مكونات</h3>
+          <h3 className="text-xl font-bold mb-2">لا توجد مواد أولية</h3>
           <p className="text-muted-foreground mb-6">
-            قم بإضافة مكونات لبدء إدارة المخزون
+            قم بإضافة مواد أولية لبدء إدارة المخزون
           </p>
           <Button onClick={handleAddIngredient}>
             <Plus className="ml-2 h-4 w-4" />
-            إضافة مكون جديد
+            إضافة مادة جديدة
           </Button>
         </div>
       ) : (

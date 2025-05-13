@@ -31,6 +31,10 @@ export function CardItem({
   // Calculate percentage for progress indicator
   const percentage = stock > 0 ? (remaining / stock) * 100 : 0;
   
+  // Calculate actual discrepancy if it's 0 but actually there is a difference
+  const actualDiscrepancy = stock - remaining;
+  const displayDiscrepancy = discrepancy !== undefined ? discrepancy : actualDiscrepancy;
+  
   return (
     <Card className="w-full overflow-hidden border border-border bg-card transition-all duration-200 hover:shadow-md">
       <div className="relative h-40">
@@ -81,8 +85,8 @@ export function CardItem({
         {discrepancy !== undefined && (
           <div className="flex justify-between items-center">
             <span className="text-sm text-muted-foreground">الفرق:</span>
-            <Badge variant={discrepancy > 0 ? "destructive" : "outline"}>
-              {discrepancy === 0 ? "لا يوجد" : discrepancy > 0 ? `-${discrepancy}` : `+${Math.abs(discrepancy)}`}
+            <Badge variant={displayDiscrepancy > 0 ? "destructive" : "outline"}>
+              {displayDiscrepancy === 0 ? "لا يوجد" : displayDiscrepancy > 0 ? `-${displayDiscrepancy}` : `+${Math.abs(displayDiscrepancy)}`}
             </Badge>
           </div>
         )}
