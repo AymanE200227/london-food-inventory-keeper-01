@@ -1,9 +1,11 @@
 
+import { useState } from "react";
 import { Drink } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import ImageUploadField from "../ingredients/ImageUploadField";
+import { Switch } from "@/components/ui/switch";
 
 interface DrinkFormProps {
   formData: Drink;
@@ -16,41 +18,53 @@ export default function DrinkForm({
   mode,
   onChange,
 }: DrinkFormProps) {
+  const [isArabic, setIsArabic] = useState<boolean>(!!formData.nameAr);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     
-    if (name === "initialStock" || name === "sold" || name === "actualRemaining") {
+    if (name === "initialStock" || name === "sold") {
       const numValue = parseInt(value, 10) || 0;
       
       if (name === "initialStock") {
         const expectedRemaining = numValue - formData.sold;
-        const discrepancy = expectedRemaining - formData.actualRemaining;
+        const actualRemaining = expectedRemaining; // Auto-calculate actual remaining
+        const discrepancy = expectedRemaining - actualRemaining;
         
         onChange({
           ...formData,
           initialStock: numValue,
           expectedRemaining,
+          actualRemaining,
           discrepancy
         });
       } else if (name === "sold") {
         const expectedRemaining = formData.initialStock - numValue;
-        const discrepancy = expectedRemaining - formData.actualRemaining;
+        const actualRemaining = expectedRemaining; // Auto-calculate actual remaining
+        const discrepancy = expectedRemaining - actualRemaining;
         
         onChange({
           ...formData,
           sold: numValue,
           expectedRemaining,
+          actualRemaining,
           discrepancy
         });
-      } else if (name === "actualRemaining") {
-        const discrepancy = formData.expectedRemaining - numValue;
-        
+      }
+    } else if (name === "name") {
+      if (isArabic) {
         onChange({
           ...formData,
-          actualRemaining: numValue,
-          discrepancy
+          nameAr: value,
+          name: formData.name, // Maintain existing English name
+        });
+      } else {
+        onChange({
+          ...formData,
+          name: value,
+          nameAr: formData.nameAr, // Maintain existing Arabic name
         });
       }
     } else {
@@ -59,6 +73,10 @@ export default function DrinkForm({
         [name]: value,
       });
     }
+  };
+
+  const toggleLanguage = () => {
+    setIsArabic(!isArabic);
   };
 
   const handleImageChange = (base64Image: string) => {
@@ -76,15 +94,28 @@ export default function DrinkForm({
             <Label htmlFor="name" className="text-left">
               الاسم
             </Label>
-            <Input
-              id="name"
-              name="name"
-              className="col-span-3"
-              placeholder="اسم المشروب (مثال: كوكا كولا/Coca Cola)"
-              value={formData.name}
-              onChange={handleChange}
-              required
-            />
+            <div className="col-span-3 flex flex-col space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <span className={!isArabic ? "font-bold text-primary" : "text-muted-foreground"}>English</span>
+                  <Switch
+                    checked={isArabic}
+                    onCheckedChange={toggleLanguage}
+                  />
+                  <span className={isArabic ? "font-bold text-primary mr-2" : "text-muted-foreground mr-2"}>العربية</span>
+                </div>
+              </div>
+              <Input
+                id="name"
+                name="name"
+                className="dir-auto"
+                dir={isArabic ? "rtl" : "ltr"}
+                placeholder={isArabic ? "اسم المشروب بالعربية" : "Drink name in English"}
+                value={isArabic ? formData.nameAr || "" : formData.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
@@ -140,7 +171,7 @@ export default function DrinkForm({
         </>
       )}
 
-      {(mode === "verify" || mode === "add" || mode === "edit") && (
+      {(mode === "verify") && (
         <div className="grid grid-cols-4 items-center gap-4">
           <Label
             htmlFor="actualRemaining"
@@ -155,7 +186,15 @@ export default function DrinkForm({
             min="0"
             className="col-span-3"
             value={formData.actualRemaining}
-            onChange={handleChange}
+            onChange={(e) => {
+              const numValue = parseInt(e.target.value, 10) || 0;
+              const discrepancy = formData.expectedRemaining - numValue;
+              onChange({
+                ...formData,
+                actualRemaining: numValue,
+                discrepancy
+              });
+            }}
             required
           />
         </div>

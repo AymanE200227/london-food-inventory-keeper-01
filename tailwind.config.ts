@@ -68,6 +68,10 @@ export default {
 					red: '#ea384c',
 					light: '#F8F5F2',
 					accent: '#D4B08C',
+					gold: '#E8C476',
+					blue: '#30658E',
+					teal: '#2D8A72',
+					sand: '#DECDB9',
 				}
 			},
 			borderRadius: {

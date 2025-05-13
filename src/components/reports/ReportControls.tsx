@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +9,8 @@ import { generateDrinksPDF, generateIngredientsPDF } from "@/utils/pdfUtils";
 import { loadDummyData } from "@/utils/localStorage";
 import { Drink, Ingredient } from "@/types";
 import { useToast } from "@/hooks/use-toast";
+import { Switch } from "@/components/ui/switch";
+import { Send } from "lucide-react";
 
 interface ReportControlsProps {
   drinks: Drink[];
@@ -22,8 +24,19 @@ export default function ReportControls({
   onDummyDataLoaded
 }: ReportControlsProps) {
   const [period, setPeriod] = useState<"daily" | "weekly" | "monthly">("daily");
-  const [phoneNumber, setPhoneNumber] = useState<string>("+212760834914");
+  const [phoneNumber, setPhoneNumber] = useState<string>(() => {
+    return localStorage.getItem("whatsapp-number") || "+212760834914";
+  });
+  const [autoReport, setAutoReport] = useState(() => {
+    const saved = localStorage.getItem("auto-report-whatsapp");
+    return saved ? JSON.parse(saved) : false;
+  });
   const { toast } = useToast();
+
+  useEffect(() => {
+    localStorage.setItem("whatsapp-number", phoneNumber);
+    localStorage.setItem("auto-report-whatsapp", JSON.stringify(autoReport));
+  }, [phoneNumber, autoReport]);
 
   const handleSendReport = () => {
     // Open WhatsApp with a predefined message
@@ -35,12 +48,17 @@ export default function ReportControls({
       drinks
         .sort((a, b) => b.sold - a.sold)
         .slice(0, 3)
-        .map((d) => `- ${d.name}: ${d.sold} وحدة`)
+        .map((d) => `- ${d.nameAr || d.name}: ${d.sold} وحدة`)
         .join("\n") +
       `\n\nالمكونات منخفضة المخزون:\n` +
       ingredients
         .filter((i) => i.remaining / i.initialStock < 0.2 && i.initialStock > 0)
-        .map((i) => `- ${i.name}: ${Math.round((i.remaining / i.initialStock) * 100)}% متبقي`)
+        .map((i) => `- ${i.nameAr || i.name}: ${Math.round((i.remaining / i.initialStock) * 100)}% متبقي`)
+        .join("\n") +
+      `\n\nحالات النقص:\n` +
+      drinks
+        .filter(d => d.discrepancy > 0)
+        .map(d => `- ${d.nameAr || d.name}: نقص ${d.discrepancy} وحدة من أصل ${d.initialStock} وحدة`)
         .join("\n")
     )}`;
     
@@ -54,10 +72,10 @@ export default function ReportControls({
 
   const handleSendAlert = () => {
     const items = [
-      ...drinks.filter(d => d.discrepancy > 0).map(d => `نقص في ${d.name}: ${d.discrepancy} وحدة`),
+      ...drinks.filter(d => d.discrepancy > 0).map(d => `نقص في ${d.nameAr || d.name}: ${d.discrepancy} وحدة من أصل ${d.initialStock} وحدة`),
       ...ingredients
         .filter(i => i.remaining / i.initialStock < 0.2 && i.initialStock > 0)
-        .map(i => `${i.name} على وشك النفاد (${Math.round((i.remaining / i.initialStock) * 100)}% متبقي)`)
+        .map(i => `${i.nameAr || i.name} على وشك النفاد (${Math.round((i.remaining / i.initialStock) * 100)}% متبقي)`)
     ];
     
     if (items.length === 0) {
@@ -105,11 +123,14 @@ export default function ReportControls({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>إعدادات التقارير</CardTitle>
+    <Card className="border-moroccan-accent/30">
+      <CardHeader className="bg-moroccan-accent/10 border-b border-moroccan-accent/20">
+        <CardTitle className="flex items-center">
+          <Send className="mr-2 h-5 w-5 text-moroccan-accent" />
+          إعدادات التقارير
+        </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 pt-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="period">الفترة الزمنية</Label>
@@ -138,14 +159,33 @@ export default function ReportControls({
           </div>
         </div>
         
+        <div className="p-4 bg-moroccan-accent/10 rounded-lg flex items-center justify-between border border-moroccan-accent/30">
+          <div>
+            <h3 className="font-bold text-foreground">التقارير التلقائية</h3>
+            <p className="text-sm text-muted-foreground">إرسال تنبيهات تلقائية عبر واتساب عند اكتشاف نقص</p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="auto-report-settings"
+              checked={autoReport}
+              onCheckedChange={setAutoReport}
+            />
+            <Label htmlFor="auto-report-settings" className="mr-2">
+              {autoReport ? "مفعل" : "معطل"}
+            </Label>
+          </div>
+        </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>إرسال التقارير</Label>
             <div className="flex flex-col gap-2">
               <Button className="w-full" onClick={handleSendReport}>
+                <Send className="ml-2 h-4 w-4" />
                 إرسال تقرير إلى واتساب
               </Button>
               <Button variant="outline" className="w-full" onClick={handleSendAlert}>
+                <Send className="ml-2 h-4 w-4" />
                 إرسال التنبيهات إلى واتساب
               </Button>
             </div>

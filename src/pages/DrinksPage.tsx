@@ -17,7 +17,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus } from "lucide-react";
+import { Plus, Send } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 export default function DrinksPage() {
   const [drinks, setDrinks] = useState<Drink[]>([]);
@@ -25,11 +27,19 @@ export default function DrinksPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedDrink, setSelectedDrink] = useState<Drink | undefined>();
   const [dialogMode, setDialogMode] = useState<"add" | "edit" | "verify">("add");
+  const [autoReport, setAutoReport] = useState(() => {
+    const saved = localStorage.getItem("auto-report-whatsapp");
+    return saved ? JSON.parse(saved) : false;
+  });
   const { toast } = useToast();
 
   useEffect(() => {
     loadDrinks();
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem("auto-report-whatsapp", JSON.stringify(autoReport));
+  }, [autoReport]);
 
   const loadDrinks = () => {
     setDrinks(getDrinks());
@@ -69,6 +79,14 @@ export default function DrinksPage() {
     }
   };
 
+  const sendToWhatsApp = (drink: Drink) => {
+    const phoneNumber = "+212760834914"; // Default number from reports page
+    const message = `تنبيه: هناك نقص في مخزون ${drink.nameAr || drink.name} بمقدار ${drink.discrepancy} وحدة من أصل ${drink.initialStock} وحدة`;
+    
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber.replace("+", "")}&text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, "_blank");
+  };
+
   const handleSaveDrink = (drink: Drink) => {
     saveDrink(drink);
     loadDrinks();
@@ -85,9 +103,25 @@ export default function DrinksPage() {
     if (dialogMode === "verify" && drink.discrepancy > 0) {
       toast({
         title: "تنبيه",
-        description: `هناك نقص في مخزون ${drink.nameAr || drink.name} بمقدار ${drink.discrepancy} وحدة`,
+        description: `هناك نقص في مخزون ${drink.nameAr || drink.name} بمقدار ${drink.discrepancy} وحدة من أصل ${drink.initialStock} وحدة`,
         variant: "destructive",
+        action: (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => sendToWhatsApp(drink)}
+            className="bg-white text-destructive"
+          >
+            <Send className="h-4 w-4 mr-2" />
+            إرسال تنبيه
+          </Button>
+        )
       });
+      
+      // Auto-send to WhatsApp if enabled
+      if (autoReport) {
+        sendToWhatsApp(drink);
+      }
     }
   };
 
@@ -103,6 +137,28 @@ export default function DrinksPage() {
           </Button>
         }
       />
+      
+      <div className="my-4 p-4 bg-moroccan-accent/10 rounded-lg flex items-center justify-between border border-moroccan-accent/30">
+        <div className="flex items-center">
+          <div className="mr-4 p-2 bg-moroccan-accent/20 rounded-full">
+            <Send className="h-5 w-5 text-moroccan-accent" />
+          </div>
+          <div>
+            <h3 className="font-bold text-foreground">التقارير التلقائية</h3>
+            <p className="text-sm text-muted-foreground">إرسال تنبيهات تلقائية عبر واتساب عند اكتشاف نقص</p>
+          </div>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="auto-report"
+            checked={autoReport}
+            onCheckedChange={setAutoReport}
+          />
+          <Label htmlFor="auto-report" className="mr-2">
+            {autoReport ? "مفعل" : "معطل"}
+          </Label>
+        </div>
+      </div>
 
       {drinks.length === 0 ? (
         <div className="text-center py-12 moroccan-pattern rounded-lg">
@@ -138,7 +194,7 @@ export default function DrinksPage() {
         {drinks.length > 0 && (
           <Button 
             size="lg" 
-            className="shadow-lg"
+            className="shadow-lg bg-moroccan-accent hover:bg-moroccan-accent/80 text-moroccan-black"
             onClick={() => {
               const lastDrink = drinks[drinks.length - 1];
               handleVerifyDrink(lastDrink);

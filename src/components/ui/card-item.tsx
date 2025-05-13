@@ -28,9 +28,12 @@ export function CardItem({
   onEdit,
   onDelete,
 }: CardItemProps) {
+  // Calculate percentage for progress indicator
+  const percentage = stock > 0 ? (remaining / stock) * 100 : 0;
+  
   return (
-    <Card className="w-full overflow-hidden border border-border bg-card">
-      <div className="relative h-36">
+    <Card className="w-full overflow-hidden border border-border bg-card transition-all duration-200 hover:shadow-md">
+      <div className="relative h-40">
         {image ? (
           <img
             src={image}
@@ -39,12 +42,14 @@ export function CardItem({
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-muted">
-            <span className="text-muted-foreground">No Image</span>
+            <div className="moroccan-pattern w-full h-full opacity-50 flex items-center justify-center">
+              <span className="text-foreground font-bold text-xl">{title.substring(0, 2)}</span>
+            </div>
           </div>
         )}
       </div>
       
-      <CardHeader className="p-4 pb-2">
+      <CardHeader className="p-4 pb-2 bg-gradient-to-r from-moroccan-accent/10 to-transparent">
         <CardTitle className="text-lg font-english">{title}</CardTitle>
         {description && <CardDescription className="text-sm">{description}</CardDescription>}
       </CardHeader>
@@ -57,14 +62,27 @@ export function CardItem({
         
         <div className="flex justify-between items-center">
           <span className="text-sm text-muted-foreground">المتبقي:</span>
-          <Badge variant="outline">{remaining}</Badge>
+          <Badge variant={percentage < 20 ? "destructive" : percentage < 50 ? "secondary" : "outline"}>
+            {remaining}
+          </Badge>
+        </div>
+        
+        {/* Progress bar indicator */}
+        <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden">
+          <div 
+            className={cn(
+              "h-full rounded-full",
+              percentage < 20 ? "bg-destructive" : percentage < 50 ? "bg-moroccan-accent" : "bg-primary"
+            )}
+            style={{ width: `${percentage}%` }}
+          />
         </div>
         
         {discrepancy !== undefined && (
           <div className="flex justify-between items-center">
             <span className="text-sm text-muted-foreground">الفرق:</span>
             <Badge variant={discrepancy > 0 ? "destructive" : "outline"}>
-              {discrepancy === 0 ? "لا يوجد" : discrepancy}
+              {discrepancy === 0 ? "لا يوجد" : discrepancy > 0 ? `-${discrepancy}` : `+${Math.abs(discrepancy)}`}
             </Badge>
           </div>
         )}
@@ -76,7 +94,7 @@ export function CardItem({
         )}
       </CardContent>
       
-      <CardFooter className="p-4 pt-2 flex justify-between">
+      <CardFooter className="p-4 pt-2 flex justify-between border-t border-border/20">
         <Button size="sm" variant="outline" onClick={onEdit}>
           <Pencil className="h-4 w-4 ml-2" />
           تعديل
