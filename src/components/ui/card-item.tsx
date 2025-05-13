@@ -23,7 +23,7 @@ export function CardItem({
   image,
   stock,
   remaining,
-  discrepancy = 0,
+  discrepancy,
   lastUpdated,
   onEdit,
   onDelete,
@@ -31,9 +31,8 @@ export function CardItem({
   // Calculate percentage for progress indicator
   const percentage = stock > 0 ? (remaining / stock) * 100 : 0;
   
-  // Calculate actual discrepancy if it's 0 but actually there is a difference
-  const actualDiscrepancy = stock - remaining;
-  const displayDiscrepancy = discrepancy !== undefined ? discrepancy : actualDiscrepancy;
+  // Calculate actual discrepancy if it's not provided
+  const displayDiscrepancy = discrepancy !== undefined ? discrepancy : stock - remaining;
   
   return (
     <Card className="w-full overflow-hidden border border-border bg-card transition-all duration-200 hover:shadow-md">
@@ -82,14 +81,12 @@ export function CardItem({
           />
         </div>
         
-        {discrepancy !== undefined && (
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">الفرق:</span>
-            <Badge variant={displayDiscrepancy > 0 ? "destructive" : "outline"}>
-              {displayDiscrepancy === 0 ? "لا يوجد" : displayDiscrepancy > 0 ? `-${displayDiscrepancy}` : `+${Math.abs(displayDiscrepancy)}`}
-            </Badge>
-          </div>
-        )}
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-muted-foreground">الفرق:</span>
+          <Badge variant={displayDiscrepancy > 0 ? "destructive" : "outline"}>
+            {displayDiscrepancy === 0 ? "لا يوجد" : displayDiscrepancy > 0 ? `-${displayDiscrepancy}` : `+${Math.abs(displayDiscrepancy)}`}
+          </Badge>
+        </div>
         
         {lastUpdated && (
           <div className="text-xs text-muted-foreground text-center mt-2">

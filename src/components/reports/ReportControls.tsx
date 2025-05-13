@@ -10,7 +10,7 @@ import { loadDummyData } from "@/utils/localStorage";
 import { Drink, Ingredient } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
-import { Send } from "lucide-react";
+import { Send, FileText } from "lucide-react";
 
 interface ReportControlsProps {
   drinks: Drink[];
@@ -39,62 +39,80 @@ export default function ReportControls({
   }, [phoneNumber, autoReport]);
 
   const handleSendReport = () => {
-    // Open WhatsApp with a predefined message
-    const reportUrl = `https://api.whatsapp.com/send?phone=${phoneNumber.replace("+", "")}&text=${encodeURIComponent(
-      `تقرير ${period === "daily" ? "يومي" : period === "weekly" ? "أسبوعي" : "شهري"} من مطعم لندن فود:\n\n` +
-      `المشروبات المباعة: ${drinks.reduce((acc, drink) => acc + drink.sold, 0)} وحدة\n` +
-      `المواد الأولية المستخدمة: ${ingredients.reduce((acc, ing) => acc + ing.used, 0)} وحدة\n\n` +
-      `المشروبات الأكثر مبيعاً:\n` +
-      drinks
-        .sort((a, b) => b.sold - a.sold)
-        .slice(0, 3)
-        .map((d) => `- ${d.nameAr || d.name}: ${d.sold} وحدة`)
-        .join("\n") +
-      `\n\nالمواد الأولية منخفضة المخزون:\n` +
-      ingredients
-        .filter((i) => i.remaining / i.initialStock < 0.2 && i.initialStock > 0)
-        .map((i) => `- ${i.nameAr || i.name}: ${Math.round((i.remaining / i.initialStock) * 100)}% متبقي`)
-        .join("\n") +
-      `\n\nحالات النقص:\n` +
-      drinks
-        .filter(d => d.discrepancy > 0)
-        .map(d => `- ${d.nameAr || d.name}: نقص ${d.discrepancy} وحدة من أصل ${d.initialStock} وحدة`)
-        .join("\n")
-    )}`;
-    
-    window.open(reportUrl, "_blank");
-    
-    toast({
-      title: "تم إرسال التقرير",
-      description: "تم فتح WhatsApp لإرسال التقرير",
-    });
+    try {
+      // Open WhatsApp with a predefined message
+      const reportUrl = `https://api.whatsapp.com/send?phone=${phoneNumber.replace("+", "")}&text=${encodeURIComponent(
+        `تقرير ${period === "daily" ? "يومي" : period === "weekly" ? "أسبوعي" : "شهري"} من مطعم لندن فود:\n\n` +
+        `المشروبات المباعة: ${drinks.reduce((acc, drink) => acc + drink.sold, 0)} وحدة\n` +
+        `المواد الأولية المستخدمة: ${ingredients.reduce((acc, ing) => acc + ing.used, 0)} وحدة\n\n` +
+        `المشروبات الأكثر مبيعاً:\n` +
+        drinks
+          .sort((a, b) => b.sold - a.sold)
+          .slice(0, 3)
+          .map((d) => `- ${d.nameAr || d.name}: ${d.sold} وحدة`)
+          .join("\n") +
+        `\n\nالمواد الأولية منخفضة المخزون:\n` +
+        ingredients
+          .filter((i) => i.remaining / i.initialStock < 0.2 && i.initialStock > 0)
+          .map((i) => `- ${i.nameAr || i.name}: ${Math.round((i.remaining / i.initialStock) * 100)}% متبقي`)
+          .join("\n") +
+        `\n\nحالات النقص:\n` +
+        drinks
+          .filter(d => d.discrepancy > 0)
+          .map(d => `- ${d.nameAr || d.name}: نقص ${d.discrepancy} وحدة من أصل ${d.initialStock} وحدة`)
+          .join("\n")
+      )}`;
+      
+      window.open(reportUrl, "_blank");
+      
+      toast({
+        title: "تم إرسال التقرير",
+        description: "تم فتح WhatsApp لإرسال التقرير",
+      });
+    } catch (error) {
+      console.error("Error sending WhatsApp report:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء إرسال التقرير",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleSendAlert = () => {
-    const items = [
-      ...drinks.filter(d => d.discrepancy > 0).map(d => `نقص في ${d.nameAr || d.name}: ${d.discrepancy} وحدة من أصل ${d.initialStock} وحدة`),
-      ...ingredients
-        .filter(i => i.remaining / i.initialStock < 0.2 && i.initialStock > 0)
-        .map(i => `${i.nameAr || i.name} على وشك النفاد (${Math.round((i.remaining / i.initialStock) * 100)}% متبقي)`)
-    ];
-    
-    if (items.length === 0) {
+    try {
+      const items = [
+        ...drinks.filter(d => d.discrepancy > 0).map(d => `نقص في ${d.nameAr || d.name}: ${d.discrepancy} وحدة من أصل ${d.initialStock} وحدة`),
+        ...ingredients
+          .filter(i => i.remaining / i.initialStock < 0.2 && i.initialStock > 0)
+          .map(i => `${i.nameAr || i.name} على وشك النفاد (${Math.round((i.remaining / i.initialStock) * 100)}% متبقي)`)
+      ];
+      
+      if (items.length === 0) {
+        toast({
+          description: "لا توجد تنبيهات للإرسال",
+        });
+        return;
+      }
+      
+      const alertUrl = `https://api.whatsapp.com/send?phone=${phoneNumber.replace("+", "")}&text=${encodeURIComponent(
+        `تنبيهات من مطعم لندن فود:\n\n` + items.join("\n")
+      )}`;
+      
+      window.open(alertUrl, "_blank");
+      
       toast({
-        description: "لا توجد تنبيهات للإرسال",
+        title: "تم إرسال التنبيه",
+        description: "تم فتح WhatsApp لإرسال التنبيه",
       });
-      return;
+    } catch (error) {
+      console.error("Error sending WhatsApp alert:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء إرسال التنبيه",
+        variant: "destructive"
+      });
     }
-    
-    const alertUrl = `https://api.whatsapp.com/send?phone=${phoneNumber.replace("+", "")}&text=${encodeURIComponent(
-      `تنبيهات من مطعم لندن فود:\n\n` + items.join("\n")
-    )}`;
-    
-    window.open(alertUrl, "_blank");
-    
-    toast({
-      title: "تم إرسال التنبيه",
-      description: "تم فتح WhatsApp لإرسال التنبيه",
-    });
   };
   
   const handleExportDrinksPDF = () => {
@@ -132,12 +150,21 @@ export default function ReportControls({
   };
   
   const handleLoadDummyData = () => {
-    const data = loadDummyData();
-    onDummyDataLoaded(data);
-    toast({
-      title: "تم تحميل البيانات التجريبية",
-      description: "تم إضافة بيانات تجريبية للمشروبات والمواد الأولية",
-    });
+    try {
+      const data = loadDummyData();
+      onDummyDataLoaded(data);
+      toast({
+        title: "تم تحميل البيانات التجريبية",
+        description: "تم إضافة بيانات تجريبية للمشروبات والمواد الأولية",
+      });
+    } catch (error) {
+      console.error("Error loading dummy data:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تحميل البيانات التجريبية",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -213,9 +240,11 @@ export default function ReportControls({
             <Label>تصدير التقارير (PDF)</Label>
             <div className="flex flex-col gap-2">
               <Button variant="secondary" className="w-full" onClick={handleExportDrinksPDF}>
+                <FileText className="ml-2 h-4 w-4" />
                 تحميل تقرير المشروبات (PDF)
               </Button>
               <Button variant="secondary" className="w-full" onClick={handleExportIngredientsPDF}>
+                <FileText className="ml-2 h-4 w-4" />
                 تحميل تقرير المواد الأولية (PDF)
               </Button>
             </div>

@@ -14,6 +14,7 @@ const LOGO_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAA
  */
 export const generatePDF = (title, data, columns, fileName = 'london-food-report.pdf') => {
   try {
+    // Create a new PDF document
     const doc = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
@@ -21,7 +22,12 @@ export const generatePDF = (title, data, columns, fileName = 'london-food-report
     });
 
     // Add logo
-    doc.addImage(LOGO_BASE64, 'PNG', 15, 10, 20, 20);
+    try {
+      doc.addImage(LOGO_BASE64, 'PNG', 15, 10, 20, 20);
+    } catch (err) {
+      console.warn('Failed to add logo to PDF:', err);
+      // Continue without the logo
+    }
 
     // Add title
     doc.setFont('helvetica', 'bold');
@@ -50,46 +56,60 @@ export const generatePDF = (title, data, columns, fileName = 'london-food-report
       return col.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase());
     });
 
-    autoTable(doc, {
-      head: [tableHeaders],
-      body: tableData,
-      theme: 'grid',
-      headStyles: {
-        fillColor: [234, 56, 76],
-        textColor: [255, 255, 255],
-        fontStyle: 'bold',
-        halign: 'center'
-      },
-      styles: {
-        font: 'helvetica',
-        fontSize: 10,
-        cellPadding: 5,
-        halign: 'right'
-      },
-      alternateRowStyles: {
-        fillColor: [245, 245, 245]
-      },
-      margin: {
-        top: 40
-      }
-    });
-
-    // Add footer
-    const pageCount = doc.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(10);
-      doc.setTextColor(150, 150, 150); // Gray text
-      doc.text('London Food - نظام إدارة المخزون', doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, {
-        align: 'center'
+    // Add table using autotable
+    try {
+      autoTable(doc, {
+        head: [tableHeaders],
+        body: tableData,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [234, 56, 76],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          halign: 'center'
+        },
+        styles: {
+          font: 'helvetica',
+          fontSize: 10,
+          cellPadding: 5,
+          halign: 'right'
+        },
+        alternateRowStyles: {
+          fillColor: [245, 245, 245]
+        },
+        margin: {
+          top: 40
+        }
       });
+    } catch (err) {
+      console.error('Error generating table:', err);
+      // Add a simple text instead if the table fails
+      doc.text('Failed to generate table. Please check your data.', 20, 50);
     }
 
+    // Add footer
+    try {
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(10);
+        doc.setTextColor(150, 150, 150); // Gray text
+        doc.text('London Food - نظام إدارة المخزون', doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, {
+          align: 'center'
+        });
+      }
+    } catch (err) {
+      console.warn('Failed to add footer to PDF:', err);
+      // Continue without the footer
+    }
+
+    // Save the PDF
     doc.save(fileName);
     console.log('PDF generated successfully:', fileName);
     return doc;
   } catch (error) {
     console.error('Error generating PDF:', error);
+    alert('حدث خطأ أثناء إنشاء ملف PDF. يرجى المحاولة مرة أخرى.');
     throw error;
   }
 };
@@ -98,22 +118,34 @@ export const generatePDF = (title, data, columns, fileName = 'london-food-report
  * Generate a PDF report for drinks
  */
 export const generateDrinksPDF = (drinks) => {
-  return generatePDF(
-    'تقرير المشروبات',
-    drinks,
-    ['name', 'initialStock', 'sold', 'expectedRemaining', 'actualRemaining', 'discrepancy'],
-    'london-food-drinks-report.pdf'
-  );
+  try {
+    return generatePDF(
+      'تقرير المشروبات',
+      drinks,
+      ['name', 'initialStock', 'sold', 'expectedRemaining', 'actualRemaining', 'discrepancy'],
+      'london-food-drinks-report.pdf'
+    );
+  } catch (error) {
+    console.error('Failed to generate drinks PDF:', error);
+    alert('حدث خطأ أثناء إنشاء تقرير المشروبات. يرجى المحاولة مرة أخرى.');
+    return null;
+  }
 };
 
 /**
  * Generate a PDF report for ingredients
  */
 export const generateIngredientsPDF = (ingredients) => {
-  return generatePDF(
-    'تقرير المواد الأولية',
-    ingredients,
-    ['name', 'initialStock', 'used', 'remaining', 'unit'],
-    'london-food-ingredients-report.pdf'
-  );
+  try {
+    return generatePDF(
+      'تقرير المواد الأولية',
+      ingredients,
+      ['name', 'initialStock', 'used', 'remaining', 'unit'],
+      'london-food-ingredients-report.pdf'
+    );
+  } catch (error) {
+    console.error('Failed to generate ingredients PDF:', error);
+    alert('حدث خطأ أثناء إنشاء تقرير المواد الأولية. يرجى المحاولة مرة أخرى.');
+    return null;
+  }
 };
