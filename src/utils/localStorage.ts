@@ -1,5 +1,5 @@
-
 import { Drink, Ingredient, ReportData } from "../types";
+import { generateDummyDrinks, generateDummyIngredients } from "./dummyData";
 
 // Drinks Storage
 export const saveDrinks = (drinks: Drink[]): void => {
@@ -71,4 +71,14 @@ export const addReport = (report: ReportData): void => {
   const reports = getReports();
   reports.push(report);
   saveReports(reports);
+};
+
+// Load dummy data into localStorage
+export const loadDummyData = () => {
+  localStorage.setItem('drinks', JSON.stringify(generateDummyDrinks()));
+  localStorage.setItem('ingredients', JSON.stringify(generateDummyIngredients()));
+  return {
+    drinks: generateDummyDrinks(),
+    ingredients: generateDummyIngredients()
+  };
 };
