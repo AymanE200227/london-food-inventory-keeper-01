@@ -77,8 +77,7 @@ export default function DrinkDialog({
           ...formData,
           initialStock: numValue,
           expectedRemaining,
-          discrepancy,
-          [name]: numValue,
+          discrepancy
         });
       } else if (name === "sold") {
         const expectedRemaining = formData.initialStock - numValue;
@@ -88,8 +87,7 @@ export default function DrinkDialog({
           ...formData,
           sold: numValue,
           expectedRemaining,
-          discrepancy,
-          [name]: numValue,
+          discrepancy
         });
       } else if (name === "actualRemaining") {
         const discrepancy = formData.expectedRemaining - numValue;
@@ -97,8 +95,7 @@ export default function DrinkDialog({
         setFormData({
           ...formData,
           actualRemaining: numValue,
-          discrepancy,
-          [name]: numValue,
+          discrepancy
         });
       }
     } else {

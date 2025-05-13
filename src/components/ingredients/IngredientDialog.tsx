@@ -79,16 +79,14 @@ export default function IngredientDialog({
         setFormData({
           ...formData,
           initialStock: numValue,
-          remaining,
-          [name]: numValue,
+          remaining
         });
       } else if (name === "used") {
         const remaining = formData.initialStock - numValue;
         setFormData({
           ...formData,
           used: numValue,
-          remaining,
-          [name]: numValue,
+          remaining
         });
       } else {
         setFormData({
