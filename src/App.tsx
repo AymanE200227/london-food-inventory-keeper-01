@@ -11,6 +11,7 @@ import IngredientsPage from "@/pages/IngredientsPage";
 import ReportsPage from "@/pages/ReportsPage";
 import NotFound from "@/pages/NotFound";
 
+// Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -20,27 +21,29 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <div className="min-h-screen moroccan-pattern">
-          <Sidebar />
-          <main className="pt-16 md:pr-64 min-h-screen">
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/drinks" element={<DrinksPage />} />
-              <Route path="/ingredients" element={<IngredientsPage />} />
-              <Route path="/reports" element={<ReportsPage />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
-        </div>
-        <Toaster />
-        <Sonner />
+        <TooltipProvider>
+          <div className="min-h-screen moroccan-pattern">
+            <Sidebar />
+            <main className="pt-16 md:pr-64 min-h-screen">
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/drinks" element={<DrinksPage />} />
+                <Route path="/ingredients" element={<IngredientsPage />} />
+                <Route path="/reports" element={<ReportsPage />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </main>
+          </div>
+          <Toaster />
+          <Sonner />
+        </TooltipProvider>
       </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+    </QueryClientProvider>
+  );
+};
 
 export default App;
