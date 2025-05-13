@@ -39,44 +39,50 @@ export default function ReportControls({
 
   const handleSendReport = async () => {
     try {
-      // Prepare report data
-      const reportData = {
-        type: "report",
-        period,
-        data: {
-          drinksSold: drinks.reduce((acc, drink) => acc + drink.sold, 0),
-          ingredientsUsed: ingredients.reduce((acc, ing) => acc + ing.used, 0),
-          topDrinks: drinks
-            .sort((a, b) => b.sold - a.sold)
-            .slice(0, 3)
-            .map((d) => ({ name: d.nameAr || d.name, sold: d.sold })),
-          lowStock: ingredients
-            .filter((i) => i.remaining / i.initialStock < 0.2 && i.initialStock > 0)
-            .map((i) => ({ 
-              name: i.nameAr || i.name, 
-              percentage: Math.round((i.remaining / i.initialStock) * 100) 
-            })),
-          discrepancies: drinks
-            .filter(d => d.discrepancy > 0)
-            .map(d => ({
-              name: d.nameAr || d.name,
-              discrepancy: d.discrepancy,
-              initialStock: d.initialStock
-            }))
-        }
-      };
+      // Format date based on period
+      let dateLabel = "اليوم";
+      if (period === "weekly") {
+        dateLabel = "الأسبوع";
+      } else if (period === "monthly") {
+        dateLabel = "الشهر";
+      }
+      
+      // Format the report message in Arabic
+      const reportMessage = `
+*تقرير ${dateLabel}*
 
-      // Send the report directly to a backend service or log it
-      console.log("Sending report data:", reportData);
+*ملخص المبيعات:*
+- إجمالي المشروبات المباعة: ${drinks.reduce((acc, drink) => acc + drink.sold, 0)} وحدة
+- إجمالي المواد المستخدمة: ${ingredients.reduce((acc, ing) => acc + ing.used, 0)} وحدة
+
+*أفضل المشروبات مبيعاً:*
+${drinks
+  .sort((a, b) => b.sold - a.sold)
+  .slice(0, 3)
+  .map((d) => `- ${d.nameAr || d.name}: ${d.sold} وحدة`)
+  .join('\n')}
+
+*المواد منخفضة المخزون:*
+${ingredients
+  .filter((i) => i.remaining / i.initialStock < 0.2 && i.initialStock > 0)
+  .map((i) => `- ${i.nameAr || i.name}: ${Math.round((i.remaining / i.initialStock) * 100)}% متبقي`)
+  .join('\n') || 'لا توجد مواد منخفضة المخزون'}
+
+*فروقات المخزون:*
+${drinks
+  .filter(d => d.discrepancy > 0)
+  .map(d => `- ${d.nameAr || d.name}: نقص ${d.discrepancy} وحدة من أصل ${d.initialStock}`)
+  .join('\n') || 'لا توجد فروقات في المخزون'}
+      `;
+      
+      // Open WhatsApp with the report
+      const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber.replace(/[+\s]/g, '')}&text=${encodeURIComponent(reportMessage)}`;
+      window.open(whatsappUrl, "_blank");
       
       toast({
         title: "تم إعداد التقرير",
-        description: "تم إرسال التقرير إلى الأرشيف",
+        description: "تم فتح واتساب لإرسال التقرير",
       });
-
-      // Here you would typically send data to a server endpoint
-      // that would handle the WhatsApp message sending via an API
-      // For demo purposes, we'll just log the data
     } catch (error) {
       console.error("Error sending report:", error);
       toast({
@@ -103,19 +109,20 @@ export default function ReportControls({
         return;
       }
 
-      // Prepare alert data to send
-      const alertData = {
-        type: "alert",
-        items: items,
-        timestamp: new Date().toISOString()
-      };
+      // Format the alert message in Arabic
+      const alertMessage = `
+*تنبيه مخزون*
+
+${items.join('\n')}
+      `;
       
-      // Log the data (would be sent to backend in production)
-      console.log("Sending alert data:", alertData);
+      // Open WhatsApp with the alert message
+      const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber.replace(/[+\s]/g, '')}&text=${encodeURIComponent(alertMessage)}`;
+      window.open(whatsappUrl, "_blank");
       
       toast({
         title: "تم إرسال التنبيه",
-        description: "تم إرسال التنبيهات إلى نظام المراقبة",
+        description: "تم فتح واتساب لإرسال التنبيه",
       });
     } catch (error) {
       console.error("Error sending alert:", error);

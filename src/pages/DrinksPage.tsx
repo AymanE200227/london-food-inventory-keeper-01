@@ -80,10 +80,10 @@ export default function DrinksPage() {
   };
 
   const sendToWhatsApp = (drink: Drink) => {
-    const phoneNumber = "+212760834914"; // Default number from reports page
-    const message = `تنبيه: هناك نقص في مخزون ${drink.nameAr || drink.name} بمقدار ${drink.discrepancy} وحدة من أصل ${drink.initialStock} وحدة`;
+    const phoneNumber = localStorage.getItem("whatsapp-number") || "+212760834914";
+    const message = `*تنبيه مخزون*\n\nنقص في ${drink.nameAr || drink.name}: ${drink.discrepancy} وحدة من أصل ${drink.initialStock} وحدة`;
     
-    const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber.replace("+", "")}&text=${encodeURIComponent(message)}`;
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber.replace(/[+\s]/g, '')}&text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, "_blank");
   };
 
