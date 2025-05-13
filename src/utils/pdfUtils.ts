@@ -21,8 +21,11 @@ export const generatePDF = (title, data, columns, fileName = 'london-food-report
       format: 'a4'
     });
 
-    // Add Arabic font support
-    doc.setFont("helvetica", "normal");
+    // Add Arabic font support - this is critical for proper Arabic text rendering
+    // Include a custom font for proper Arabic support
+    // Use Amiri font which has good Arabic support
+    doc.addFont("https://fonts.gstatic.com/s/amiri/v17/J7aRnpd8CGxBHpUrtLMA7w.ttf", "Amiri", "normal");
+    doc.setFont("Amiri", "normal");
     doc.setR2L(true); // Enable right-to-left for Arabic text
 
     // Add logo
@@ -34,7 +37,6 @@ export const generatePDF = (title, data, columns, fileName = 'london-food-report
     }
 
     // Add title
-    doc.setFont("helvetica", "bold");
     doc.setFontSize(20);
     doc.setTextColor('#ea384c'); // Red color for title
     doc.text(title, doc.internal.pageSize.width / 2, 20, {
@@ -42,7 +44,9 @@ export const generatePDF = (title, data, columns, fileName = 'london-food-report
     });
 
     // Add date
-    const currentDate = new Date().toLocaleDateString('ar-MA');
+    const now = new Date();
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    const currentDate = now.toLocaleDateString('ar', options);
     doc.setFontSize(12);
     doc.setTextColor(80, 80, 80); // Dark gray
     doc.text(`تاريخ: ${currentDate}`, doc.internal.pageSize.width - 20, 30, {
@@ -65,12 +69,22 @@ export const generatePDF = (title, data, columns, fileName = 'london-food-report
       return translations[col] || col;
     };
 
-    // Add table
-    doc.setTextColor(0, 0, 0); // Black
+    // Process data for Arabic display
     const tableData = data.map((item) => {
       return columns.map((col) => {
         if (col === 'name' && item['nameAr']) {
           return item['nameAr']; // Use Arabic name if available
+        }
+        if (col === 'unit') {
+          // Translate units to Arabic
+          const unitTranslations = {
+            'kg': 'كجم',
+            'g': 'جم',
+            'l': 'لتر',
+            'pcs': 'قطعة',
+            'box': 'علبة'
+          };
+          return unitTranslations[item[col]] || item[col];
         }
         return item[col] !== undefined ? item[col].toString() : '';
       });
@@ -80,7 +94,7 @@ export const generatePDF = (title, data, columns, fileName = 'london-food-report
       return translateColumn(col);
     });
 
-    // Add table using autotable
+    // Add table using autotable with improved Arabic support
     try {
       autoTable(doc, {
         head: [tableHeaders],
@@ -90,10 +104,11 @@ export const generatePDF = (title, data, columns, fileName = 'london-food-report
           fillColor: [234, 56, 76],
           textColor: [255, 255, 255],
           fontStyle: 'bold',
-          halign: 'right'
+          halign: 'right',
+          font: 'Amiri'
         },
         styles: {
-          font: 'helvetica',
+          font: 'Amiri',
           fontSize: 10,
           cellPadding: 5,
           halign: 'right'
