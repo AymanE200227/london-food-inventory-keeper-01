@@ -43,9 +43,9 @@ export const generatePDF = (title, data, columns, fileName = 'london-food-report
       align: 'center'
     });
 
-    // Add date
+    // Add date - Fix TypeScript error by using proper DateTimeFormatOptions values
     const now = new Date();
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    const options = { year: "numeric", month: "long", day: "numeric" };
     const currentDate = now.toLocaleDateString('ar', options);
     doc.setFontSize(12);
     doc.setTextColor(80, 80, 80); // Dark gray
